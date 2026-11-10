@@ -26,13 +26,15 @@ Tables: `profiles`, `likes`, `matches`, `messages`, `blocks`, `reports`.
 Open `index.html` with a static server, or run `npm install` then `npm run dev`.
 
 ## Free GitHub Pages deployment
+
+For the requested root URL `https://connectionglobally.github.io/`, the repository itself must be named exactly `connectionglobally.github.io` under the `connectionglobally` account. Rename this repository in GitHub Settings → General → Repository name before enabling Pages. The project URL with `/connectionglobally/` is only used when the repository keeps its current name.
 The workflow in `.github/workflows/deploy.yml` builds and deploys the site when commits reach `main`.
 
 1. Open repository **Settings → Pages**.
 2. Under **Build and deployment**, choose **GitHub Actions** as the source.
 3. Wait for the workflow in the **Actions** tab to finish.
 
-Expected project URL: https://connectionglobally.github.io/connectionglobally/
+Expected project URL: https://connectionglobally.github.io/
 
 ## Required Supabase production setup
 1. In Supabase Authentication → URL Configuration, set Site URL to the GitHub Pages URL and add it to the Redirect URLs allow-list.
