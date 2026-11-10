@@ -58,10 +58,31 @@ function render(){
   }
   $$('[data-view]').forEach(a=>a.classList.toggle('active',a.dataset.view===view));
 }
-async function boot(){const {data}=await supabase.auth.getSession();session=data.session;if(session){await loadProfile();await refresh();}render();supabase.auth.onAuthStateChange(async(_event,s)=>{session=s;if(session){try{await loadProfile();await refresh()}catch(e){toast(e.message)}}else{profile=null;people=[];likes=[];matches=[];view='discover'}render()});}
+async function boot(){
+  // Render immediately: never leave the page blank while Supabase responds.
+  render();
+  const {data,error}=await supabase.auth.getSession();
+  if(error) throw error;
+  session=data.session;
+  if(session){
+    root.innerHTML='<div class="auth-wrap"><section class="auth-form"><span class="eyebrow">DATEZONE COMMUNITY</span><h2>Loading your account…</h2><p>Just a moment while we load your profile.</p></section></div>';
+    await loadProfile();
+    await refresh();
+  }
+  render();
+  supabase.auth.onAuthStateChange(async(_event,s)=>{
+    session=s;
+    if(session){
+      root.innerHTML='<div class="auth-wrap"><section class="auth-form"><h2>Loading your account…</h2><p>Just a moment.</p></section></div>';
+      try{await loadProfile();await refresh();}
+      catch(e){root.innerHTML='<div class="auth-wrap"><section class="auth-form"><h2>Could not load your account</h2><p>'+escapeHtml(e.message)+'</p><button class="primary" onclick="location.reload()">Try again</button></section></div>';return;}
+    }else{profile=null;people=[];likes=[];matches=[];view='discover';}
+    render();
+  });
+}
 root.addEventListener('click',async e=>{const b=e.target.closest('[data-auth-mode]');if(b){authScreen(b.dataset.authMode);return}const v=e.target.closest('[data-view]');if(v){e.preventDefault();view=v.dataset.view;activeMatch=null;render();return}const a=e.target.closest('[data-action]');if(a?.dataset.action==='logout'){await supabase.auth.signOut();return}if(a?.dataset.action==='profile'){view='profile';render();return}const like=e.target.closest('[data-like]');if(like){const to=like.dataset.like;const {error}=await supabase.from('likes').insert({from_user:session.user.id,to_user:to});if(error&&error.code!=='23505')toast(error.message);else{toast('Like sent. If they like you too, you’ll match!');await refresh();render()}return}const c=e.target.closest('[data-chat]');if(c){const m=matches.find(x=>x.id===c.dataset.chat);if(m){activeMatch=m;if(chatChannel){supabase.removeChannel(chatChannel);chatChannel=null}const {data,error}=await supabase.from('messages').select('*').eq('match_id',m.id).order('created_at');if(error)toast(error.message);messages=data||[];chatChannel=supabase.channel('chat-'+m.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'match_id=eq.'+m.id},payload=>{if(payload.new.sender_id!==session.user.id){messages.push(payload.new);render()}}).subscribe();view='messages';render()}return}const r=e.target.closest('[data-report]');if(r){const reason=prompt('Why are you reporting this member?');if(reason){const {error}=await supabase.from('reports').insert({reporter_id:session.user.id,reported_id:r.dataset.report,reason:reason.slice(0,100)});toast(error?'Could not submit report: '+error.message:'Report submitted. Thank you.')}return}const bl=e.target.closest('[data-block]');if(bl){if(confirm('Block this member?')){const {error}=await supabase.from('blocks').insert({blocker_id:session.user.id,blocked_id:bl.dataset.block});if(error)toast(error.message);else{await refresh();render();toast('Member blocked.')}}return}const f=e.target.closest('[data-filter]');if(f){currentFilter=f.dataset.filter;render() }});
 root.addEventListener('submit',async e=>{if(e.target.id==='auth-form'){e.preventDefault();const fd=new FormData(e.target);const email=fd.get('email'),password=fd.get('password');const res=e.target.querySelector('button');res.disabled=true;try{let out;if(fd.get('name'))out=await supabase.auth.signUp({email,password,options:{data:{display_name:fd.get('name')}}});else out=await supabase.auth.signInWithPassword({email,password});if(out.error)throw out.error;if(fd.get('name')&&!out.data.session){authScreen('login','Check your email to confirm your account, then sign in.')}else toast('Welcome to DateZone.')}catch(err){e.target.insertAdjacentHTML('afterend','<p class="auth-error">'+escapeHtml(err.message)+'</p>')}finally{res.disabled=false}}
 if(e.target.id==='onboard-form'||e.target.id==='profile-form'){e.preventDefault();const fd=new FormData(e.target);const age=ageOf(fd.get('birth_date'));if(!age||age<18){toast('You must be at least 18 to use DateZone.');return}const payload={id:session.user.id,display_name:fd.get('display_name'),birth_date:fd.get('birth_date'),gender:fd.get('gender'),interested_in:[fd.get('interested_in')||'Everyone'],city:fd.get('city'),country:fd.get('country'),bio:fd.get('bio')||'',updated_at:new Date().toISOString()};const {data,error}=await supabase.from('profiles').upsert(payload).select().single();if(error){toast(error.message);return}profile=data;await refresh();view='discover';render();toast('Your profile is saved.')}
 if(e.target.id==='message-form'){e.preventDefault();const body=new FormData(e.target).get('body').trim();if(!body)return;const {data,error}=await supabase.from('messages').insert({match_id:activeMatch.id,sender_id:session.user.id,body}).select().single();if(error){toast(error.message);return}messages.push(data);render() }});
 root.addEventListener('change',async e=>{if(e.target.id==='avatar-file'){const file=e.target.files[0];if(!file)return;if(file.size>5*1024*1024){toast('Choose an image smaller than 5 MB.');return}const ext=file.name.split('.').pop().toLowerCase();const path=session.user.id+'/avatar-'+Date.now()+'.'+ext;const {error}=await supabase.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type});if(error){toast(error.message);return}const {data}=supabase.storage.from('avatars').getPublicUrl(path);const {data:updated,error:updateError}=await supabase.from('profiles').update({avatar_url:data.publicUrl}).eq('id',session.user.id).select().single();if(updateError)toast(updateError.message);else{profile=updated;render();toast('Profile photo updated.')}}});
-boot().catch(e=>{root.innerHTML='<div class="panel"><h2>Could not load DateZone</h2><p>'+escapeHtml(e.message)+'</p></div>'});
+boot().catch(e=>{root.innerHTML='<div class="auth-wrap"><section class="auth-form"><span class="eyebrow">DATEZONE COMMUNITY</span><h2>Could not load DateZone</h2><p>'+escapeHtml(e.message||'A connection problem occurred.')+'</p><button class="primary full" onclick="location.reload()">Try again</button></section></div>'});
