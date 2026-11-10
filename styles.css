@@ -17,3 +17,25 @@ main{padding:30px 42px;min-width:0;max-width:1240px;width:100%;margin:0 auto}.no
 
 .phone-share{border-color:#d9c5d4;background:#f8f1f7}.phone-share b{display:block;font-size:10px;color:#6e4d70;margin-bottom:6px}.phone-share div{font-size:14px;font-weight:800;letter-spacing:.3px}.compose [data-push-phone]{white-space:nowrap;font-size:10px;padding:10px 13px;border-radius:22px}.formgrid label small{font-size:9px;line-height:1.5;color:#958895;font-weight:500}
 @media(max-width:680px){.compose{flex-wrap:wrap}.compose input{flex:1 1 100%}.compose [data-push-phone]{flex:1}}
+
+/* Compact, feed-like profile photos */
+.photo{height:150px}
+.cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media(max-width:1050px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}.photo{height:140px}}
+@media(max-width:680px){.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.photo{height:122px}}
+@media(max-width:380px){.photo{height:108px}}
+.chat-title{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.video-call-button{margin-left:auto;border-color:#e7b5c5;color:#bd5577}
+.receipt{display:block;text-align:right;font-size:9px;font-weight:800;color:#9b8e9b;margin-top:3px}
+.receipt.seen{color:#159447}
+.call-backdrop{position:fixed;inset:0;background:#170e20b8;z-index:100;display:grid;place-items:center;padding:18px}
+.call-panel{background:#fff;border-radius:18px;padding:24px;width:min(560px,100%);box-shadow:0 25px 80px #10081666}
+.call-panel h2{font:800 21px Manrope;margin:0 0 8px}.call-panel p{font-size:12px;color:var(--muted)}
+.call-actions{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.video-panel{width:min(900px,100%);padding:15px}
+.video-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:12px}
+.video-stage{position:relative;background:#17121b;border-radius:13px;min-height:240px;aspect-ratio:16/9;overflow:hidden;display:grid;place-items:center}
+.video-stage #remote-video{width:100%;height:100%;object-fit:contain}
+.video-stage #local-video{position:absolute;right:14px;bottom:14px;width:22%;max-height:32%;aspect-ratio:4/3;object-fit:cover;border:2px solid #fff;border-radius:10px;background:#302838}
+.video-wait{position:absolute;color:#fff;background:#17121b99;padding:8px 13px;border-radius:20px;bottom:10px;font-size:11px}
+.video-panel .call-actions .outline{border-radius:22px}
