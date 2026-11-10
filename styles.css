@@ -14,3 +14,6 @@ main{padding:30px 42px;min-width:0;max-width:1240px;width:100%;margin:0 auto}.no
 /* Workspace scrolls independently; the member sidebar stays in place. */
 @media(min-width:681px){.layout{align-items:start}aside{position:sticky;top:76px;height:calc(100vh - 76px);overflow-y:auto;overscroll-behavior:contain;align-self:start}main{min-height:calc(100vh - 76px)}}
 .public-intro{padding:36px 0 8px}.public-intro h1{font:800 clamp(28px,3vw,38px)/1.15 Manrope;margin:0 0 10px}.public-intro p{font-size:12px;color:var(--muted);line-height:1.7}.public-intro .primary{margin-top:8px}
+
+.phone-share{border-color:#d9c5d4;background:#f8f1f7}.phone-share b{display:block;font-size:10px;color:#6e4d70;margin-bottom:6px}.phone-share div{font-size:14px;font-weight:800;letter-spacing:.3px}.compose [data-push-phone]{white-space:nowrap;font-size:10px;padding:10px 13px;border-radius:22px}.formgrid label small{font-size:9px;line-height:1.5;color:#958895;font-weight:500}
+@media(max-width:680px){.compose{flex-wrap:wrap}.compose input{flex:1 1 100%}.compose [data-push-phone]{flex:1}}
