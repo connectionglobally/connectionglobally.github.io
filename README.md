@@ -17,6 +17,8 @@ The app connects to the Supabase project configured in `app.js` using its public
 Migrations created:
 - `create_dating_platform_core`
 - `tighten_function_permissions_and_indexes`
+- `enforce_adult_profiles_and_realtime_chat`
+- `remove_unneeded_message_update_access`
 
 Tables: `profiles`, `likes`, `matches`, `messages`, `blocks`, `reports`.
 
